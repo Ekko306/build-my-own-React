@@ -1,7 +1,6 @@
 {
   "name": "build-my-own-react",
   "version": "1.0.0",
-  "description": "",
   "main": "0.The createElement Function.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,6 +8,21 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
     "react": "^17.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ekko306/build-my-own-React.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ekko306/build-my-own-React/issues"
+  },
+  "homepage": "https://github.com/Ekko306/build-my-own-React#readme",
+  "description": "",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0"
   }
 }

@@ -35,18 +35,12 @@ function createTextElement(text) {
 // 更改以前的render逻辑
 function createDom(fiber) {
     const dom = fiber.type === "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(fiber.type)
-    const isProperty = key => key !== "children"
-    Object.keys(fiber.props)
-        .filter(isProperty)
-        .forEach(name => {
-            dom[name] = fiber.props[name]
-        })
     updateDom(dom, {}, fiber.props)
     return dom
 }
 
 const isEvent = key => key.startsWith("on")
-const isProperty = key => key !== "children" && isEvent(key)
+const isProperty = key => key !== "children" && !isEvent(key)
 const isNew = (prev, next) => key => prev[key] !== next[key]
 const isGone = (prev, next) => key => !(key in next)
 function updateDom(dom, prevProps, nextProps) {
@@ -99,16 +93,30 @@ function commitWork(fiber) {
     if (!fiber) {
         return
     }
-    const domParent = fiber.parent.dom
+    let domParentFiber = fiber.parent
+    while (!domParentFiber.dom) {
+        domParentFiber = domParentFiber.parent
+    }
+    const domParent = domParentFiber.dom
+
     if (fiber.effectTag === "PLACEMENT" && fiber.dom != null) {
         domParent.appendChild(fiber.dom)
     } else if (fiber.effectTag === "DELETION") {
-        domParent.removeChild(fiber.dom)
+        commitDeletion(fiber, domParent)
+        // domParent.removeChild(fiber.dom)
     } else if (fiber.effectTag === "UPDATE" && fiber.dom != null) {
         updateDom(fiber.dom, fiber.alternate.props, fiber.props)
     }
     commitWork(fiber.child)
     commitWork(fiber.sibling)
+}
+
+function commitDeletion(fiber, domParent) {
+    if (fiber.dom) {
+        domParent.removeChild(fiber.dom)
+    } else {
+        commitDeletion(fiber.child, domParent)
+    }
 }
 
 function render(element, container) {
@@ -145,13 +153,20 @@ function workLoop(deadline) {
 requestIdleCallback(workLoop)
 
 function performUnitOfWork(fiber) {
-    // TODO add dom node
-    if (!fiber.dom) {
-        fiber.dom = createDom(fiber)
+    const isFunctionComponent = fiber.type instanceof Function
+    if (isFunctionComponent) {
+        updateFunctionComponent(fiber)
+    } else {
+        updateHostComponent(fiber)
     }
-    // TODO create new fibers
-    const elements = fiber.props.children
-    reconcileChildren(fiber, elements)
+
+    // // TODO add dom node
+    // if (!fiber.dom) {
+    //     fiber.dom = createDom(fiber)
+    // }
+    // // TODO create new fibers
+    // const elements = fiber.props.children
+    // reconcileChildren(fiber, elements)
 
     // TODO return next unit of work
     if (fiber.child) {
@@ -164,6 +179,18 @@ function performUnitOfWork(fiber) {
         }
         nextFiber = nextFiber.parent
     }
+}
+
+function updateFunctionComponent(fiber) {
+    //TODO
+    const children = [fiber.type(fiber.props)]
+    reconcileChildren(fiber, children)
+}
+function updateHostComponent(fiber) {
+    if (!fiber.dom) {
+        fiber.dom = createDom(fiber)
+    }
+    reconcileChildren(fiber, fiber.props.children)
 }
 
 function reconcileChildren(wipFiber, elements) {
@@ -231,33 +258,17 @@ const Didact = {
 //     Didact.createElement("a", null, "bar"),
 //     Didact.createElement("b")
 // )
-// const container = document.getElementById("root")
-// Didact.render(element, container)
-
-
-// 测试例子麻烦一点 他是直接写的jsx 咋转换不知道
-/** @jsx Didact.createElement */
-const container = document.getElementById("root")
-
-const updateValue = e => {
-    rerender(e.target.value)
-}
-
-const rerender = value => {
-    // const element = (
-    //     <div>
-    //         <input onInput={updateValue} value={value} />
-    //         <h2>Hello {value}</h2>
-    //     </div>
-    // )
-    console.log(value)
-    const element = Didact.createElement(
-        "div",
+function App(props) {
+    return Didact.createElement(
+        "h1",
         null,
-        Didact.createElement("input", {oninput: updateValue, value: value} ),
-        Didact.createElement("h2", null, value)
+        "Hi ",
+        props.name
     )
-    Didact.render(element, container)
 }
+const element = Didact.createElement(App, {
+    name: "foo",
+})
+const container = document.getElementById("root")
+Didact.render(element, container)
 
-rerender("World")

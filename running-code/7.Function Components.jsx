@@ -1,12 +1,4 @@
-// const element = React.createElement(
-//     "div",
-//     {id: "foo"},
-//     React.createElement("a", null, "bar"),
-//     React.createElement("b")
-// )
-// const container = document.getElementById("root")
-// ReactDOM.render(element, container)
-// 实现render
+// 7. Function Components 实现函数组件（不同于直接组件，是一个函数逻辑）
 
 
 // build my own React
@@ -35,17 +27,12 @@ function createTextElement(text) {
 // 更改以前的render逻辑
 function createDom(fiber) {
     const dom = fiber.type === "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(fiber.type)
-    const isProperty = key => key !== "children"
-    Object.keys(fiber.props)
-        .filter(isProperty)
-        .forEach(name => {
-            dom[name] = fiber.props[name]
-        })
+    updateDom(dom, {}, fiber.props)
     return dom
 }
 
 const isEvent = key => key.startsWith("on")
-const isProperty = key => key !== "children" && isEvent(key)
+const isProperty = key => key !== "children" && !isEvent(key)
 const isNew = (prev, next) => key => prev[key] !== next[key]
 const isGone = (prev, next) => key => !(key in next)
 function updateDom(dom, prevProps, nextProps) {
@@ -188,45 +175,9 @@ function performUnitOfWork(fiber) {
 
 function updateFunctionComponent(fiber) {
     //TODO
-    wipFiber = fiber
-    hookIndex = 0
-    wipFiber.hooks = []
     const children = [fiber.type(fiber.props)]
     reconcileChildren(fiber, children)
 }
-
-let wipFiber = null
-let hookIndex = null
-function useState(initial) {
-    const oldHook =
-        wipFiber.alternate &&
-        wipFiber.alternate.hooks &&
-        wipFiber.alternate.hooks[hookIndex]
-    const hook = {
-        state: oldHook ?oldHook.state : initial,
-        queue: [],
-    }
-
-    const actions = oldHook ? oldHook.queue : []
-    actions.forEach(action => {
-        hook.state = action(hook.state)
-    })
-
-    const setState = action => {
-        hook.queue.push(action)
-        wipRoot = {
-            dom: currentRoot.dom,
-            props: currentRoot.props,
-            alternate: currentRoot,
-        }
-        nextUnitOfWork = wipRoot
-        deletions = []
-    }
-    wipFiber.hooks.push(hook)
-    hookIndex++
-    return [hook.state, setState]
-}
-
 function updateHostComponent(fiber) {
     if (!fiber.dom) {
         fiber.dom = createDom(fiber)
@@ -291,33 +242,12 @@ function reconcileChildren(wipFiber, elements) {
 const Didact = {
     createElement,
     render,
-    useState
 }
 
-// const element = Didact.createElement(
-//     "div",
-//     { id: "foo" },
-//     Didact.createElement("a", null, "bar"),
-//     Didact.createElement("b")
-// )
-
-// 还是要jsx转js
 /** @jsx Didact.createElement */
-function Counter() {
-    const [state, setState] = Didact.useState(1)
-    // return (
-    //     <h1 onClick={() => setState(c => c + 1)}>
-    //         Count: {state}
-    //     </h1>
-    // )
-    return Didact.createElement(
-        "h1",
-        {onclick: ()=> setState(c => c + 1)},
-         "Count:" + state
-    )
+function App(props) {
+    return <h1>Hi {props.name}</h1>
 }
-const element = Didact.createElement(Counter)
-
-const container = document.getElementById("root")
+const element = <App name="foo" />
+const container = document.getElementById("root7")
 Didact.render(element, container)
-
