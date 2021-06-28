@@ -13,7 +13,7 @@ function createElement(type, props) {
         children[_key - 2] = arguments[_key];
     }
 
-    return {
+    var a = {
         type: type,
         props: _extends({}, props, {
             children: children.map(function (child) {
@@ -21,6 +21,8 @@ function createElement(type, props) {
             })
         })
     };
+    console.log(a);
+    return a;
 }
 
 function createTextElement(text) {
@@ -57,7 +59,7 @@ var Didact = {
     /** @jsx Didact.createElement */
 };var element = Didact.createElement(
     "div",
-    { id: "foo" },
+    { id: "foo", name: "my" },
     Didact.createElement(
         "a",
         null,

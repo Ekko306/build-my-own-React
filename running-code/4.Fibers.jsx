@@ -64,7 +64,7 @@ function performUnitOfWork(fiber) {
         fiber.dom = createDom(fiber)
     }
     if(fiber.parent) {
-        (fiber.parent.dom.appendChild(fiber.dom))
+        fiber.parent.dom.appendChild(fiber.dom)
     }
     // TODO create new fibers
     const elements = fiber.props.children

@@ -3,7 +3,7 @@
 
 // build my own React
 function createElement(type, props, ...children) {
-    return {
+    let a = {
         type,
         props: {
             ...props,
@@ -12,6 +12,8 @@ function createElement(type, props, ...children) {
             )
         }
     };
+    console.log(a)
+    return a
 }
 
 function createTextElement(text) {
@@ -48,7 +50,7 @@ const Didact = {
 
 /** @jsx Didact.createElement */
 const element = (
-    <div id="foo">
+    <div id="foo" name="my">
         <a>bar</a>
         <b />
     </div>
